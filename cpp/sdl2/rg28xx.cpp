@@ -23,8 +23,6 @@ along with FreeJ2ME.  If not, see http://www.gnu.org/licenses/
 
 */
 
-//rg28xx的屏幕方向是竖着的480*640
-
 #include <iostream>
 #include <pthread.h>
 #include <SDL2/SDL.h>
@@ -33,25 +31,25 @@ along with FreeJ2ME.  If not, see http://www.gnu.org/licenses/
 #define BYTES 2
 
 #define M_A 0
-#define M_B 1
+#define M_B 4
 #define M_X 3
-#define M_Y 2
-#define M_start 7
-#define M_select 6
-#define M_L 4
-#define M_L2 9
-#define M_R 5
-#define M_R2 0xa
+#define M_Y 5
+#define M_start 10
+#define M_select 9
+#define M_L 7
+#define M_L2 12
+#define M_R 8
+#define M_R2 6
 #define M_UP 0x11
 #define M_DOWN 0x12
 #define M_LEFT 0x13
 #define M_RIGHT 0x14
-#define M_QUIT2 8
-#define M_VolP 0xe
-#define M_VolS 0xd
+#define M_QUIT2 11
+#define M_VolP 2
+#define M_VolS 1
 
 
-int KEY_LEFT=M_Y;
+int KEY_LEFT=M_B;
 int KEY_RIGHT=M_A;
 int KEY_OK=M_X;
 int KEY_STAR=M_select;
@@ -60,7 +58,7 @@ int KEY_1=M_L;
 int KEY_3=M_R;
 int KEY_7=M_L2;
 int KEY_9=M_R2;
-int KEY_0=M_B;
+int KEY_0=M_Y;
 
 pthread_t t_capturing;
 
@@ -74,7 +72,7 @@ int display_width = 0, display_height = 0;
 unsigned int last_time = 0;
 
 bool capturing = true;
-int rotate=1;//由于28xx的屏幕是歪的，所以初始就做一次旋转
+int rotate=0;
 int overlay_scale=2;
 
 SDL_Renderer *mRenderer;
@@ -583,18 +581,13 @@ void *startCapturing(void *args)
 					fflush(stderr);
 					//continue;
 					break;
-				/* case SDL_KEYDOWN:
-				case SDL_KEYUP:
-					std::cout << "key:"<<SDL_GetKeyName(event.key.keysym.sym) << " keycode:"<< event.key.keysym.sym<< " press:"<<event.key.state << std::endl;
-					fflush(stdout);
-					break; */
 				case SDL_JOYHATMOTION:
-					//printf("jhat.hat:%x jhat.value:%x event.key.state:%d \n",event.jhat.hat, event.jhat.value, event.key.state);
-					//fflush(stdout);
+					printf("jhat.hat:%x jhat.value:%x event.key.state:%d \n",event.jhat.hat, event.jhat.value, event.key.state);
+					fflush(stdout);
 					if ( event.jhat.value == SDL_HAT_UP )
 					{
 						event.type=SDL_JOYBUTTONDOWN;
-						event.jbutton.button=M_LEFT;
+						event.jbutton.button=M_UP;
 						event.jbutton.state = SDL_PRESSED;
 						
 					}
@@ -603,7 +596,7 @@ void *startCapturing(void *args)
 					{
 						
 						event.type=SDL_JOYBUTTONDOWN;
-						event.jbutton.button=M_RIGHT;
+						event.jbutton.button=M_DOWN;
 						event.jbutton.state = SDL_PRESSED;
 					}
 					
@@ -611,7 +604,7 @@ void *startCapturing(void *args)
 					{
 						
 						event.type=SDL_JOYBUTTONDOWN;
-						event.jbutton.button=M_DOWN;
+						event.jbutton.button=M_LEFT;
 						event.jbutton.state = SDL_PRESSED;
 					}
 					
@@ -619,10 +612,11 @@ void *startCapturing(void *args)
 					{
 						
 						event.type=SDL_JOYBUTTONDOWN;
-						event.jbutton.button=M_UP;
+						event.jbutton.button=M_RIGHT;
 						event.jbutton.state = SDL_PRESSED;
 					}
 					
+					//else if( event.jhat.value == 0 )
 					else
 					{
 						event.type=SDL_JOYBUTTONUP;
@@ -646,8 +640,8 @@ void *startCapturing(void *args)
 				case SDL_JOYBUTTONDOWN:
 				case SDL_JOYBUTTONUP:
 				{
-					//printf("btn:%x %x %d\n",event.jbutton.button,event.key.keysym.sym, event.type);
-					//fflush(stdout);
+					printf("btn:%x %x %d\n",event.jbutton.button,event.key.keysym.sym, event.type);
+					fflush(stdout);
 				
 					if(event.jbutton.button>=M_UP && event.jbutton.button<=M_RIGHT)
 					{
@@ -1000,7 +994,7 @@ int keyname2keycode(const char * name)
 	{
 		return M_R2;
 	}
-	
+
 	return 0;
 	
 }
@@ -1109,8 +1103,8 @@ int main(int argc, char* argv[])
 		source_width = atoi(argv[1]);
 		source_height = atoi(argv[2]);
 		
-		display_width = 480;
-		display_height = 640;
+		display_width = 640;
+		display_height = 480;
 		
 	}
 	else{
